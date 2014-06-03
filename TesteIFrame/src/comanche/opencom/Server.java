@@ -1,0 +1,51 @@
+package comanche.opencom;
+
+import OpenCOM.ILifeCycle;
+import OpenCOM.IOpenCOM;
+import OpenCOM.IUnknown;
+import OpenCOM.OpenCOM;
+
+public class Server {
+	public static void main(String[] args) {
+		OpenCOM runtime = new OpenCOM();
+        IOpenCOM oc =  (IOpenCOM) runtime.QueryInterface("OpenCOM.IOpenCOM"); 
+       
+        IUnknown pRequestReceiverUnk = (IUnknown) oc.createInstance("comanche.opencom.Receiver", "Receiver");
+        ILifeCycle pRequestReceiverLife =  (ILifeCycle) pRequestReceiverUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pRequestReceiverLife.startup(oc);
+        
+        IUnknown pSchedulerUnk = (IUnknown) oc.createInstance("comanche.opencom.Scheduler", "Scheduler");
+        ILifeCycle pSchedulerLife =  (ILifeCycle) pSchedulerUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pSchedulerLife.startup(oc);
+        
+        IUnknown pRequestAnalyzerUnk = (IUnknown) oc.createInstance("comanche.opencom.Analyzer", "Analyzer");
+        ILifeCycle pRequestAnalyzerLife =  (ILifeCycle) pRequestAnalyzerUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pRequestAnalyzerLife.startup(oc);
+        
+        IUnknown pRequestDispatcherUnk = (IUnknown) oc.createInstance("comanche.opencom.Dispatcher", "Dispatcher");
+        ILifeCycle pRequestDispatcherLife =  (ILifeCycle) pRequestDispatcherUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pRequestDispatcherLife.startup(oc);
+        
+        IUnknown pFileRequestHandlerUnk = (IUnknown) oc.createInstance("comanche.opencom.FileHandler", "FileHandler");
+        ILifeCycle pFileRequestHandlerLife =  (ILifeCycle) pFileRequestHandlerUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pFileRequestHandlerLife.startup(oc);
+        
+        IUnknown pErrorRequestHandlerUnk = (IUnknown) oc.createInstance("comanche.opencom.ErrorHandler", "ErrorHandler");
+        ILifeCycle pErrorRequestHandlerLife =  (ILifeCycle) pErrorRequestHandlerUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pErrorRequestHandlerLife.startup(oc);
+        
+        IUnknown pLoggerUnk = (IUnknown) oc.createInstance("comanche.opencom.Logger", "Logger");
+        ILifeCycle pLoggerLife =  (ILifeCycle) pLoggerUnk.QueryInterface("OpenCOM.ILifeCycle");
+        pLoggerLife.startup(oc);
+        
+        oc.connect(pRequestReceiverUnk, pSchedulerUnk, "comanche.opencom.IScheduler");
+        oc.connect(pRequestReceiverUnk, pRequestAnalyzerUnk, "comanche.opencom.IAnalyzer");
+        oc.connect(pRequestAnalyzerUnk, pRequestDispatcherUnk, "comanche.opencom.IDispatcher");
+        oc.connect(pRequestAnalyzerUnk, pLoggerUnk, "comanche.opencom.ILogger");
+        oc.connect(pRequestDispatcherUnk, pFileRequestHandlerUnk, "comanche.opencom.IFileHandler");
+        oc.connect(pRequestDispatcherUnk, pErrorRequestHandlerUnk, "comanche.opencom.IErrorHandler");
+        
+        Runner r = (Runner) pRequestReceiverUnk.QueryInterface("comanche.opencom.Runner");
+        r.run();
+	}
+}
